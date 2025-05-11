@@ -89,9 +89,9 @@ public:
 
 //======================================= Client ============================================
 class Client : public Person {
-    double balance;
     Visa visa;
     vector<Transaction> transactionHistory;
+    double balance =visa.getBalance() ;
 public:
     Client(int _id, string _name, string _pass, double _balance)
         : Person(_id, _name, _pass), visa(_id, _balance) {
