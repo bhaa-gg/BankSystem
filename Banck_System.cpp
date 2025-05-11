@@ -51,7 +51,7 @@ private:
 public:
     Visa(int _visaId, double _balance) : visaId(_visaId), balance(_balance), transferCount(0) {}
 
-    void setBalance(double _balance) { balance = _balance; }
+    void setBalance(double _balance) { balance += _balance; }
     double getBalance() const { return balance; }
     int getTransferCount() const { return transferCount; }
     int getVisaId() const { return visaId; }
@@ -94,8 +94,8 @@ struct Transaction {
 //======================================= Client ============================================
 class Client : public Person {
     Visa visa;
+    double balance;
     vector<Transaction> transactionHistory;
-    double balance =visa.getBalance() ;
 public:
     Client(int _id, string _name, string _pass, double _balance)
         : Person(_id, _name, _pass), visa(_id, _balance) {
