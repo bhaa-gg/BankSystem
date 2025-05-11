@@ -9,30 +9,7 @@
 
 using namespace std;
 
-//===================================== Transaction Struct =================================
 
-enum class TransactionType { Deposit, Withdraw, TransferTo, TransferFrom, Interest };
-
-
-string to_string(TransactionType type) {
-    switch (type) {
-    case TransactionType::Deposit: return "Deposit";
-    case TransactionType::Withdraw: return "Withdraw";
-    case TransactionType::TransferTo: return "TransferTo";
-    case TransactionType::TransferFrom: return "TransferFrom";
-    case TransactionType::Interest: return "Interest";
-    default: return "Unknown";
-    }
-}
-
-struct Transaction {
-    double amount;
-    TransactionType type;
-    int recipientId;
-
-    Transaction(double _amount, TransactionType _type, int _recipientId = -1)
-        : amount(_amount), type(_type), recipientId(_recipientId) {}
-};
 
 //===================================== Person ==============================================
 
@@ -87,6 +64,33 @@ public:
     }
 };
 
+
+//===================================== Transaction Struct =================================
+
+enum class TransactionType { Deposit, Withdraw, TransferTo, TransferFrom, Interest };
+
+
+string to_string(TransactionType type) {
+    switch (type) {
+    case TransactionType::Deposit: return "Deposit";
+    case TransactionType::Withdraw: return "Withdraw";
+    case TransactionType::TransferTo: return "TransferTo";
+    case TransactionType::TransferFrom: return "TransferFrom";
+    case TransactionType::Interest: return "Interest";
+    default: return "Unknown";
+    }
+}
+
+struct Transaction {
+    double amount;
+    TransactionType type;
+    int recipientId;
+    string name;
+
+    Transaction(double _amount, TransactionType _type, string _name="", int _recipientId = -1)
+        : amount(_amount), type(_type), recipientId(_recipientId), name(_name){}
+};
+
 //======================================= Client ============================================
 class Client : public Person {
     double balance;
@@ -114,7 +118,7 @@ public:
         if (amount <= 0) throw runtime_error("Deposit amount must be positive");
         balance += amount;
         visa.setBalance(balance);
-        transactionHistory.emplace_back(amount, TransactionType::Deposit);
+        transactionHistory.emplace_back(amount, TransactionType::Deposit,name);
     }
 
     void withdraw(double amount) {
@@ -122,7 +126,7 @@ public:
         if (balance >= amount) {
             balance -= amount;
             visa.setBalance(balance);
-            transactionHistory.emplace_back(amount, TransactionType::Withdraw);
+            transactionHistory.emplace_back(amount, TransactionType::Withdraw, name);
         }
         else {
             throw runtime_error("Insufficient balance for withdrawal");
@@ -137,8 +141,8 @@ public:
             visa.setBalance(balance);
             other->visa.setBalance(other->balance);
             visa.incrementTransfer();
-            transactionHistory.emplace_back(amount, TransactionType::TransferTo, other->getId());
-            other->transactionHistory.emplace_back(amount, TransactionType::TransferFrom, id);
+            transactionHistory.emplace_back(amount, TransactionType::TransferTo, other->getName(), other->getId());
+            other->transactionHistory.emplace_back(amount, TransactionType::TransferFrom, name, id);
             cout << "Transfer successful.\n";
             updateFile();
             other->updateFile();
@@ -154,6 +158,7 @@ public:
         cout << "Transaction History:\n";
         for (const auto& t : transactionHistory) {
             cout << "Type: " << to_string(t.type) << ", Amount: " << t.amount;
+			cout << ", Name: " << t.name;
             if (t.recipientId != -1) cout << ", Recipient ID: " << t.recipientId;
             cout << endl;
         }
@@ -459,20 +464,16 @@ public:
         cout << "\nLogged out successfully.\n";
     }
 
-    /**
-     * @brief Captures password input with asterisk masking.
-     * @return The entered password as a string.
-     */
     static string getPassword() {
         string password;
         char ch;
         while (true) {
             ch = _getch();
-            if (ch == 13) { // Enter
+            if (ch == 13) { 
                 cout << endl;
                 break;
             }
-            else if (ch == 8) { // Backspace
+            else if (ch == 8) { 
                 if (!password.empty()) {
                     password.pop_back();
                     cout << "\b \b";
